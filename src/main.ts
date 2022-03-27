@@ -98,14 +98,16 @@ async function main() {
   // sort from oldest to newest.
   toRt.sort((a, b) => a.date.valueOf() - b.date.valueOf());
 
-  if (argv.includes("local")) {
-    console.log("to RT:\n", toRt);
-    console.log("count:", toRt.length);
-    return;
-  }
+  console.log("to RT:\n", toRt);
+  console.log("count:", toRt.length);
 
   if (toRt.length === 0) {
     console.log("nothing to retweet.");
+    return;
+  }
+
+  if (argv.includes("dry-run")) {
+    console.log("dry run, exiting.");
     return;
   }
 
@@ -123,9 +125,6 @@ async function main() {
 }
 
 void main()
-  .then(() => {
-    console.log("ok");
-  })
   .then(() => flushSentry(2000))
   .then(() => {
     console.log("done.");

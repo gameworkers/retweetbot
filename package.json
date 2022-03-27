@@ -6,7 +6,7 @@
   "main": "dist/main.js",
   "scripts": {
     "start": "node --enable-source-maps dist/main.js",
-    "dev": "NODE_ENV=development ts-node -T src/main.ts -- local",
+    "dev": "NODE_ENV=development ts-node -T src/main.ts -- dry-run",
     "build": "rm -rf dist/ && tsc",
     "test": "run-p -cl test:*",
     "test:ts": "tsc --noEmit",
