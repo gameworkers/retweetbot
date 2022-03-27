@@ -12,19 +12,12 @@ export const {
   TWITTER_CONSUMER_SECRET,
   TWITTER_ACCESS_KEY,
   TWITTER_ACCESS_SECRET,
-  DATA_DIR,
   SENTRY_DSN,
 } = parseEnv(process.env, {
   TWITTER_CONSUMER_KEY: z.string().nonempty(),
   TWITTER_CONSUMER_SECRET: z.string().nonempty(),
   TWITTER_ACCESS_KEY: z.string().nonempty(),
   TWITTER_ACCESS_SECRET: z.string().nonempty(),
-  DATA_DIR: {
-    schema: z.string().nonempty(),
-    defaults: {
-      development: "persist",
-    },
-  },
   SENTRY_DSN: z.string().nonempty().optional(),
 });
 

@@ -4,12 +4,15 @@ import { TwitterClient } from "twitter-api-client";
 import { close as flushSentry } from "@sentry/node";
 
 import {
-  DATA_DIR,
   TWITTER_ACCESS_KEY,
   TWITTER_ACCESS_SECRET,
   TWITTER_CONSUMER_KEY,
   TWITTER_CONSUMER_SECRET,
 } from "./env";
+
+// the number of tweets that should be considered in the window of tweets to
+// retweet for each user.
+const MAX_TL_LENGTH_PER_USER = 10;
 
 const argv = process.argv.slice(2);
 
@@ -44,7 +47,7 @@ async function main() {
   for (const userId of userIds) {
     const tl = await client.tweets.statusesUserTimeline({
       user_id: userId,
-      count: 200,
+      count: MAX_TL_LENGTH_PER_USER,
       trim_user: true,
       include_rts: !accountIdsWithRTsDisabled.has(userId),
       // this will exclude thread replies, which i think is what we want.
