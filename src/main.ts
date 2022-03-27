@@ -44,14 +44,16 @@ async function main() {
     accessTokenSecret: TWITTER_ACCESS_SECRET,
   });
 
-  // bad typings
-  const { ids: userIds } = (await client.accountsAndUsers
-    .friendsIds({
-      stringify_ids: true,
+  const { users: follows } = await client.accountsAndUsers
+    .friendsList({
+      skip_status: true,
+      include_user_entities: false,
+      // we should be so lucky to have to worry about pagination
+      count: 200,
     })
     .catch((e) => {
       throw getEnsuredError(e);
-    })) as unknown as { ids: string[] };
+    });
 
   const accountIdsWithRTsDisabled = new Set(
     // bad typings again
@@ -64,9 +66,9 @@ async function main() {
       })) as string[]
   );
 
-  const toRt: string[] = [];
+  const toRt: { tweetId: string; from: string }[] = [];
 
-  for (const userId of userIds) {
+  for (const { id_str: userId, screen_name } of follows) {
     const tl = await client.tweets
       .statusesUserTimeline({
         user_id: userId,
@@ -82,7 +84,7 @@ async function main() {
 
     for (const tweet of tl) {
       if (!tweet.retweeted) {
-        toRt.push(tweet.id_str);
+        toRt.push({ tweetId: tweet.id_str, from: screen_name });
       }
     }
 
@@ -91,7 +93,7 @@ async function main() {
   }
 
   if (argv.includes("local")) {
-    console.log("tweet ids to RT:\n", toRt);
+    console.log("to RT:\n", toRt);
     console.log("count:", toRt.length);
     return;
   }
@@ -101,8 +103,12 @@ async function main() {
   // tweets by date. this will retweet everything by each account in turn. in
   // practice this should run frequently enough that it won't be a problem.
   for (let i = toRt.length - 1; i >= 0; i--) {
+    const { tweetId, from } = toRt[i];
+    console.log(
+      `retweeting https://twitter.com/anyone/status/${tweetId} (from ${from})`
+    );
     await client.tweets
-      .statusesRetweetById({ id: toRt[i], trim_user: true })
+      .statusesRetweetById({ id: tweetId, trim_user: true })
       .catch((e) => {
         throw getEnsuredError(e, { id: toRt[i] });
       });
