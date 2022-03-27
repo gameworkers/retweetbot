@@ -63,7 +63,7 @@ async function main() {
       throw getEnsuredError(e);
     });
 
-  const toRt: { tweetId: string; from: string }[] = [];
+  const toRt: { tweetId: string; from: string; date: Date }[] = [];
 
   for (const { id_str: userId, screen_name } of follows) {
     const tl = await client.tweets
@@ -83,7 +83,11 @@ async function main() {
 
     for (const tweet of tl) {
       if (!tweet.retweeted) {
-        toRt.push({ tweetId: tweet.id_str, from: screen_name });
+        toRt.push({
+          tweetId: tweet.id_str,
+          from: screen_name,
+          date: new Date(tweet.created_at),
+        });
       }
     }
 
@@ -91,25 +95,23 @@ async function main() {
     await setTimeout(500);
   }
 
+  // sort from oldest to newest.
+  toRt.sort((a, b) => a.date.valueOf() - b.date.valueOf());
+
   if (argv.includes("local")) {
     console.log("to RT:\n", toRt);
     console.log("count:", toRt.length);
     return;
   }
 
-  // iterate in reverse to preserve timeline order. unfortunately we don't
-  // necessarily know when retweets were made, so we can't really sort all
-  // tweets by date. this will retweet everything by each account in turn. in
-  // practice this should run frequently enough that it won't be a problem.
-  for (let i = toRt.length - 1; i >= 0; i--) {
-    const { tweetId, from } = toRt[i];
+  for (const { tweetId, from, date } of toRt) {
     console.log(
-      `retweeting https://twitter.com/anyone/status/${tweetId} (from ${from})`
+      `retweeting https://twitter.com/anyone/status/${tweetId} (from ${from}, posted ${date})`
     );
     await client.tweets
       .statusesRetweetById({ id: tweetId, trim_user: true })
       .catch((e) => {
-        throw getEnsuredError(e, { id: toRt[i] });
+        throw getEnsuredError(e, toRt);
       });
     await setTimeout(5000);
   }
