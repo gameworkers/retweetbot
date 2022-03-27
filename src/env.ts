@@ -18,7 +18,7 @@ export const {
   TWITTER_CONSUMER_SECRET: z.string().nonempty(),
   TWITTER_ACCESS_KEY: z.string().nonempty(),
   TWITTER_ACCESS_SECRET: z.string().nonempty(),
-  SENTRY_DSN: z.string().nonempty().optional(),
+  SENTRY_DSN: z.string().optional(),
 });
 
 export const isDev = process.env["NODE_ENV"] !== "production";

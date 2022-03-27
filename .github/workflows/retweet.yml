@@ -3,7 +3,7 @@ name: retweet on a schedule
 on:
   workflow_dispatch:
   schedule:
-    - cron: "2,22,42 * * * *"
+    - cron: "6,26,46 * * * *"
 
 jobs:
   scheduled:
