@@ -10,9 +10,17 @@ import {
   TWITTER_CONSUMER_SECRET,
 } from "./env";
 
-// the number of tweets that should be considered in the window of tweets to
-// retweet for each user.
-const MAX_TL_LENGTH_PER_USER = 10;
+/**
+ * the number of tweets that should be considered in the window of tweets to
+ * retweet for each user.
+ */
+const MAX_TL_LENGTH_PER_USER = 50;
+
+/**
+ * id representing a cutoff date -- tweets before this won't be included in
+ * results or considered for RTing.
+ */
+const SINCE = "1507130214463201284";
 
 const argv = process.argv.slice(2);
 
@@ -61,6 +69,7 @@ async function main() {
     const tl = await client.tweets
       .statusesUserTimeline({
         user_id: userId,
+        since_id: SINCE,
         count: MAX_TL_LENGTH_PER_USER,
         trim_user: true,
         include_rts: false,
