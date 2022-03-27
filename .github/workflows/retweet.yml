@@ -1,0 +1,43 @@
+name: retweet on a schedule
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "2,22,42 * * * *"
+
+jobs:
+  scheduled:
+    runs-on: ubuntu-latest
+    environment: twoot
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          # disjoint branch with "unused concept" data
+          ref: "persist"
+          path: "persist"
+      - uses: actions/setup-node@v2
+        with:
+          node-version-file: ".nvmrc"
+          cache: "yarn"
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: yarn start
+        env:
+          NODE_ENV: "production"
+          DATA_DIR: "persist"
+          TWITTER_ACCESS_KEY: ${{ secrets.TWITTER_ACCESS_KEY }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+          TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      - name: Commit and push if changed
+        run: |-
+          set -euxo pipefail
+          cd persist
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          timestamp=$(date -u)
+          git commit -m "Latest data: ${timestamp}" || exit 0
+          git push
