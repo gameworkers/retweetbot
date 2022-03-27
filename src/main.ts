@@ -104,6 +104,11 @@ async function main() {
     return;
   }
 
+  if (toRt.length === 0) {
+    console.log("nothing to retweet.");
+    return;
+  }
+
   for (const { tweetId, from, date } of toRt) {
     console.log(
       `retweeting https://twitter.com/anyone/status/${tweetId} (from ${from}, posted ${date})`
