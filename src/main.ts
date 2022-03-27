@@ -55,17 +55,6 @@ async function main() {
       throw getEnsuredError(e);
     });
 
-  const accountIdsWithRTsDisabled = new Set(
-    // bad typings again
-    (await client.accountsAndUsers
-      .friendshipsNoRetweetsIds({
-        stringify_ids: true,
-      })
-      .catch((e) => {
-        throw getEnsuredError(e);
-      })) as string[]
-  );
-
   const toRt: { tweetId: string; from: string }[] = [];
 
   for (const { id_str: userId, screen_name } of follows) {
@@ -74,8 +63,9 @@ async function main() {
         user_id: userId,
         count: MAX_TL_LENGTH_PER_USER,
         trim_user: true,
-        include_rts: !accountIdsWithRTsDisabled.has(userId),
-        // this will exclude thread replies, which i think is what we want.
+        include_rts: false,
+        // this will also exclude replies to a user's own threads, which i think
+        // is what we want.
         exclude_replies: true,
       })
       .catch((e) => {
